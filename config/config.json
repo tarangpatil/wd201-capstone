@@ -1,0 +1,20 @@
+{
+  "development": {
+    "username": "postgresclq",
+    "password": "mysql69",
+    "database": "lms-dev",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  },
+  "test": {
+    "username": "tarangpatil",
+    "password": "mysql69",
+    "database": "lms-test",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  },
+  "production": {
+    "use_env_variable": "DATABASE_URL",
+    "dialect": "postgres"
+  }
+}
