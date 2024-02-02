@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Log In</title>
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+  </head>
+  <body>
+    <div id="root" class="flex flex-col items-center">
+      <div class="w-[33.33vw]">
+        <h3 class="text-4xl font-bold my-4 text-center mt-8">Log-In</h3>
+        <form action="/login" method="post" class="flex flex-col items-center">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+          <input
+            type="email"
+            name="email"
+            placeholder="E-Mail"
+            class="border box-border my-4 mx-6 bg-slate-100 px-4 py-2 w-[80%]"
+          />
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            class="border box-border my-4 mx-6 bg-slate-100 px-4 py-2 w-[80%]"
+          />
+          <p class="pb-3">
+            New here?
+            <a href="/signup" class="text-green-600 underline">Sign up</a>
+          </p>
+          <input
+            type="submit"
+            value="Log In"
+            class="w-min bg-green-700 py-2 px-5 text-white"
+          />
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

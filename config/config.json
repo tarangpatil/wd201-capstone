@@ -1,13 +1,13 @@
 {
   "development": {
-    "username": "postgresclq",
+    "username": "postgres",
     "password": "mysql69",
     "database": "lms-dev",
     "host": "127.0.0.1",
     "dialect": "postgres"
   },
   "test": {
-    "username": "tarangpatil",
+    "username": "postgres",
     "password": "mysql69",
     "database": "lms-test",
     "host": "127.0.0.1",

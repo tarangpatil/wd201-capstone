@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign Up</title>
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+  </head>
+  <body>
+    <div id="root" class="flex justify-center">
+      <div class="w-[33.33vw]">
+        <h3 class="text-4xl font-bold text-center py-4 mt-8">Sign up</h1>
+        <form action="/users" method="post" class="flex flex-col items-center">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+          <input
+            type="text"
+            name="firstName"
+            placeholder="First name"
+            class="border box-border my-4 mx-6 bg-slate-100 px-4 py-2 w-[80%]"
+          />
+          <input
+            type="text"
+            name="lastName"
+            placeholder="Last name"
+            class="border box-border my-4 mx-6 bg-slate-100 px-4 py-2 w-[80%]"
+          />
+          <input
+            type="email"
+            name="email"
+            placeholder="E-Mail"
+            class="border box-border my-4 mx-6 bg-slate-100 px-4 py-2 w-[80%]"
+          />
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            class="border box-border my-4 mx-6 bg-slate-100 px-4 py-2 w-[80%]"
+          />
+          <p>Do you want to sign up as:</p>
+          <div class="h-max flex flex-col w-full items-center">
+            <label class="bg-gray-200 py-2 px-4 my-1 w-[60%] rounded-md hover:bg-gray-300">
+              <input type="radio" value="student" name="userType" id="" class=""> Student
+            </label>
+            <label class="bg-gray-200 py-2 px-4 my-1 w-[60%] rounded-md hover:bg-gray-300">
+            <input type="radio" value="educator" name="userType" id="" class=""> Educator
+          </label>
+          </div>
+          <p class="my-2">Already have an account? <a href="/login" class="text-green-600 underline">Sign In</a></p>
+          <input
+            type="submit"
+            value="Submit"
+            class="w-min bg-green-700 py-2 px-5 text-white"
+          />
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
