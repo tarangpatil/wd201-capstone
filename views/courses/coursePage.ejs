@@ -5,24 +5,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
     <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
   </head>
   <body>
-    <header class="flex items-center">
+    <header class="flex items-center justify-between w-[80%]">
       <h1 class="px-80 my-12 font-bold text-4xl"><%= name %></h1>
       <% if(courseOwner) { %>
       <a
         href=""
-        class="border-red-700 border rounded px-4 py-2 bg-red-700 text-white"
+        class="border-red-700 border rounded px-4 py-2 bg-red-700 text-white hover:bg-white hover:text-red-700"
         >Delete Course</a
       >
       <% } %>
     </header>
     <hr class="h-1 w-[80%] m-auto bg-gray-200 border-0 dark:bg-gray-700" />
     <main>
+      <% if (chapters.length === 0) { %>
       <p class="text-xl text-center my-8">
-        This course has no chapters<% if(courseOwner) {%>
-        <a href="/courses/<%= courseID %>/chapters/new">Create one?</a><% } %>
+        This course has no chapters.<br /><% if(courseOwner) {%>
+        <a
+          href="/courses/<%= courseID %>/chapters/new"
+          class="text-green-700 underline"
+          >Click here to create one</a
+        ><% } %>
       </p>
+      <% } %>
+      <ul class="w-[75%] m-auto my-6">
+        <% chapters.forEach((chapter) => { %>
+        <li
+          class="my-4 bg-slate-200 py-2 px-4 rounded hover:bg-slate-300 flex justify-between items-center"
+        >
+          <a href="/chapters/<%= chapter.id %>" class="w-[90%]">
+            <div>
+              <p class="text-xl"><%=chapter.name%></p>
+              <div class="px-6 py-1"><%= chapter.description %></div>
+            </div>
+          </a>
+          <button
+            class="fa fa-trash-o text-3xl text-center w-[5%] h-12 hover:bg-red-700 rounded hover:text-white"
+            id="delete-chapter-<%= chapter.id %>"
+          ></button>
+        </li>
+        <% }) %>
+      </ul>
     </main>
   </body>
 </html>

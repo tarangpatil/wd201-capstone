@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const connectEnsureLogin = require("connect-ensure-login");
-const { User, Course } = require("../models");
+const { User, Course, Chapter } = require("../models");
 
 router.get("/", async (req, res) => {
   if (req.isAuthenticated()) {
@@ -16,21 +16,24 @@ router.get(
   connectEnsureLogin.ensureLoggedIn(),
   async (req, res) => {
     if (req.isAuthenticated()) {
-      const myCourses = (await Course.findAll({ include: User })).map(
-        (course) => ({
-          name: course.dataValues.name,
-          author: `${course.User.firstName} ${course.User.lastName}`,
-          strength: 100,
-          id: course.id,
-        })
-      );
-      console.log(myCourses);
-      res.render("dashboard", {
-        firstName: req.user.firstName,
-        userType: req.user.userType,
-        lastName: req.user.lastName,
-        myCourses,
-      });
+      const allCourses = await Course.findAll({ include: User });
+      if (req.user.userType === "educator") {
+        res.render("dashboard", {
+          firstName: req.user.firstName,
+          userType: req.user.userType,
+          lastName: req.user.lastName,
+          myCourses: allCourses.filter(
+            (course) => course.User.id === req.user.id
+          ),
+        });
+      } else {
+        res.render("dashboard", {
+          firstName: req.user.firstName,
+          userType: req.user.userType,
+          lastName: req.user.lastName,
+          myCourses: allCourses,
+        });
+      }
     }
   }
 );
@@ -50,7 +53,7 @@ router.get(
   async (req, res) => {
     if (req.user.userType !== "educator") {
       res.send(
-        `<h3 class="text-center">Sign in as an educator to create courses<br /><a href="/login">Click to login</a></h3>`
+        `<h3 style="text-align:center">Sign in as an educator to create courses<br /><a href="/login">Click to login</a></h3>`
       );
     }
     res.render("courses/createCourse", { csrfToken: req.csrfToken() });
@@ -80,10 +83,16 @@ router.get("/courses/:id", async (req, res) => {
       courseOwner: false,
     });
   }
+  const chapters = await Chapter.findAll({
+    where: {
+      courseId: courseID,
+    },
+  });
   res.render("courses/coursePage", {
     courseID,
+    chapters,
     name: course.name,
-    courseOwner: req.user.id === courseID,
+    courseOwner: req.user.id === course.userId,
   });
 });
 
@@ -91,7 +100,41 @@ router.get(
   "/courses/:id/chapters/new",
   connectEnsureLogin.ensureLoggedIn(),
   async (req, res) => {
-    res.json(req.params.id);
+    if (req.user.userType === "educator") {
+      const courseName = (await Course.findByPk(req.params.id)).name;
+      res.render("chapters/createChapter.ejs", {
+        csrfToken: req.csrfToken(),
+        courseName,
+        courseId: req.params.id,
+      });
+    } else
+      res.send(
+        `<h3 style="text-align:center">Sign in as an educator to create courses<br /><a href="/login">Click to login</a></h3>`
+      );
+  }
+);
+
+router.post(
+  "/chapter",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    if (req.user.userType !== "educator") return res.redirect("/login");
+    const { courseId, name, description } = req.body;
+    console.log(req.body);
+    const chapter = await Chapter.create({
+      courseId,
+      name,
+      description,
+    });
+    res.redirect(`/courses/${courseId}/`);
+  }
+);
+
+router.delete(
+  "/chapter",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    const chapterId = req.body.id;
   }
 );
 

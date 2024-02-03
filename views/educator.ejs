@@ -16,7 +16,7 @@
   <p class="w-full px-8">-Your Courses</p>
   <div class="w-full px-12 py-4 grid grid-cols-4">
     <% myCourses.forEach(course => { %> <%-
-    include("courses/courseCard",{id:course.id,name:course.name,author:course.author,strength:myCourses.length})
-    %> <% }) %>
+    include("courses/courseCard",{id:course.id,name:course.name,author:`${course.User.firstName}
+    ${course.User.lastName}`,strength:myCourses.length}) %> <% }) %>
   </div>
 </section>

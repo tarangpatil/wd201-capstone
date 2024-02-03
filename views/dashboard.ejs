@@ -6,6 +6,7 @@
     <title>Document</title>
     <script src="https://cdn.tailwindcss.com/3.4.1"></script>
   </head>
+
   <body>
     <header class="flex justify-between items-center h-20">
       <h1 class="text-4xl my-2 mx-4 font-bold">
@@ -18,7 +19,8 @@
       >
     </header>
     <main>
-      <%- userType === "student" ? include("student") : include("educator") %>
+      <% if(userType==="student" ) {%> <%- include("student") %> <% } else { %>
+      <%- include("educator") %> <% } %>
     </main>
   </body>
 </html>
