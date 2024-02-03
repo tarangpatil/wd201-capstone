@@ -8,7 +8,7 @@
   </head>
   <body>
     <header class="flex items-center">
-      <h1 class="px-80 my-16 font-bold text-4xl"><%= name %></h1>
+      <h1 class="px-80 my-12 font-bold text-4xl"><%= name %></h1>
       <% if(courseOwner) { %>
       <a
         href=""
@@ -17,5 +17,12 @@
       >
       <% } %>
     </header>
+    <hr class="h-1 w-[80%] m-auto bg-gray-200 border-0 dark:bg-gray-700" />
+    <main>
+      <p class="text-xl text-center my-8">
+        This course has no chapters<% if(courseOwner) {%>
+        <a href="/courses/<%= courseID %>/chapters/new">Create one?</a><% } %>
+      </p>
+    </main>
   </body>
 </html>
