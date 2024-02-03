@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+  </head>
+  <body>
+    <header class="flex items-center">
+      <h1 class="px-80 my-16 font-bold text-4xl"><%= name %></h1>
+      <% if(courseOwner) { %>
+      <a
+        href=""
+        class="border-red-700 border rounded px-4 py-2 bg-red-700 text-white"
+        >Delete Course</a
+      >
+      <% } %>
+    </header>
+  </body>
+</html>

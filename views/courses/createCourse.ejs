@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+  </head>
+  <body>
+    <h2 class="text-3xl font-bold text-center my-4">Create New Course</h2>
+    <form action="/course" method="post" class="flex flex-col items-center">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+      <input
+        type="text"
+        name="courseName"
+        placeholder="Enter course name here"
+        class="border rounded-md py-2 px-4 bg-slate-50 text-lg w-96"
+      />
+      <input
+        type="submit"
+        value="Submit"
+        class="w-min bg-green-700 py-2 px-5 text-white my-4"
+      />
+    </form>
+  </body>
+</html>

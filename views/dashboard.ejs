@@ -17,5 +17,8 @@
         >Logout</a
       >
     </header>
+    <main>
+      <%- userType === "student" ? include("student") : include("educator") %>
+    </main>
   </body>
 </html>
