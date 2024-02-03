@@ -24,9 +24,11 @@
             placeholder="Password"
             class="border box-border my-4 mx-6 bg-slate-100 px-4 py-2 w-[80%]"
           />
-          <p class="pb-3">
-            New here?
-            <a href="/signup" class="text-green-600 underline">Sign up</a>
+          <p class="pb-3 w-full text-center">
+            New here?<br />
+            <a href="/signup" class="text-green-600 underline"
+              >Click here to Sign up</a
+            >
           </p>
           <input
             type="submit"
@@ -35,6 +37,13 @@
           />
         </form>
       </div>
+      <ul class="list-none">
+        <% if(messages && messages.error && messages.error.length > 0)  { %>
+          <% for(var i=0; i<messages.error.length; i++) { %>
+            <li class="bg-red-600 px-6 py-4 my-4 text-white"> <%= messages.error[i] %></li>
+          <% } %>
+        <% } %> 
+      </ul>
     </div>
   </body>
 </html>

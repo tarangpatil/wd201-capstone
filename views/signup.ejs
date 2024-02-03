@@ -7,9 +7,9 @@
     <script src="https://cdn.tailwindcss.com/3.4.1"></script>
   </head>
   <body>
-    <div id="root" class="flex justify-center">
+    <div id="root" class="flex items-center flex-col">
       <div class="w-[33.33vw]">
-        <h3 class="text-4xl font-bold text-center py-4 mt-8">Sign up</h1>
+        <h3 class="text-4xl font-bold text-center py-4 mt-8">Sign up</h3>
         <form action="/users" method="post" class="flex flex-col items-center">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
           <input
@@ -17,6 +17,7 @@
             name="firstName"
             placeholder="First name"
             class="border box-border my-4 mx-6 bg-slate-100 px-4 py-2 w-[80%]"
+            required
           />
           <input
             type="text"
@@ -29,23 +30,37 @@
             name="email"
             placeholder="E-Mail"
             class="border box-border my-4 mx-6 bg-slate-100 px-4 py-2 w-[80%]"
+            required
           />
           <input
             type="password"
             name="password"
             placeholder="Password"
             class="border box-border my-4 mx-6 bg-slate-100 px-4 py-2 w-[80%]"
+            required
+            minlength="8"
           />
           <p>Do you want to sign up as:</p>
           <div class="h-max flex flex-col w-full items-center">
-            <label class="bg-gray-200 py-2 px-4 my-1 w-[60%] rounded-md hover:bg-gray-300">
-              <input type="radio" value="student" name="userType" id="" class=""> Student
+            <label
+              class="bg-gray-200 py-2 px-4 my-1 w-[60%] rounded-md hover:bg-gray-300"
+            >
+              <input type="radio" value="student" name="userType" required />
+              Student
             </label>
-            <label class="bg-gray-200 py-2 px-4 my-1 w-[60%] rounded-md hover:bg-gray-300">
-            <input type="radio" value="educator" name="userType" id="" class=""> Educator
-          </label>
+            <label
+              class="bg-gray-200 py-2 px-4 my-1 w-[60%] rounded-md hover:bg-gray-300"
+            >
+              <input type="radio" value="educator" name="userType" />
+              Educator
+            </label>
           </div>
-          <p class="my-2">Already have an account? <a href="/login" class="text-green-600 underline">Sign In</a></p>
+          <p class="my-2 w-full text-center">
+            Already have an account?
+            <a href="/login" class="text-green-600 underline"
+              ><br />Click here to Log In</a
+            >
+          </p>
           <input
             type="submit"
             value="Submit"
@@ -53,6 +68,33 @@
           />
         </form>
       </div>
+      <div
+        id="error"
+        class="bg-red-600 text-white py-4 px-6 invisible my-6"
+      ></div>
     </div>
   </body>
+  <script>
+    const form = document.querySelector("form");
+    const errorDiv = document.querySelector("#error");
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      const form = document.querySelector("form");
+      const data = Object.fromEntries(new FormData(form).entries());
+      const response = await fetch("/users", {
+        method: "post",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (response.status === 401) {
+        const resData = await response.json();
+        errorDiv.classList.remove("invisible");
+        errorDiv.textContent = resData.message;
+        return;
+      }
+      console.log(await response.status);
+      console.log(response.url);
+      window.location = response.url;
+    };
+  </script>
 </html>

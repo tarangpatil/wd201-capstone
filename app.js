@@ -8,15 +8,19 @@ const { User } = require("./models");
 const passport = require("passport");
 const connectEnsureLogin = require("connect-ensure-login");
 const session = require("express-session");
+const flash = require("connect-flash");
 const LocalStrategy = require("passport-local");
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
 const path = require("path");
 
+app.use(express.static(__dirname + "/public"));
 app.use(express.json());
+app.set("views", path.join(__dirname, "views"));
 app.use(express.urlencoded({ extended: false }));
 app.set("view engine", "ejs");
 app.use(cookieParser("n*_h!bR?tr1t095a*l&1Tr0d7QAsPlcI"));
+app.use(flash());
 app.use(
   session({
     secret: "3!i9O1Ithi_uxl$$uB2uSt32aMa*0Ige",
@@ -24,6 +28,10 @@ app.use(
   })
 );
 app.use(csurf("trofrUzA?rUzu2rLP4Lv&pif$lXepHAv", ["POST", "PUT", "DELETE"]));
+app.use(function (request, response, next) {
+  response.locals.messages = request.flash();
+  next();
+});
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -38,7 +46,7 @@ passport.use(
       User.findOne({ where: { email: username } })
         .then(async (user) => {
           if (user === null) {
-            return done(null, false);
+            return done(null, false, { message: "user does not exist" });
           }
           const result = await bcrypt.compare(password, user.password);
           if (result) return done(null, user);
@@ -99,17 +107,19 @@ app.post("/users", async (req, res) => {
       if (err) {
         console.log(err);
       }
-      res.redirect("/dashboard");
+      res.status(301).redirect("/dashboard");
     });
   } catch (error) {
-    console.log(error);
+    console.log(error.errors[0].message);
+    res.status(401).json({ message: error.errors[0].message });
   }
 });
 
 app.post(
   "/login",
   passport.authenticate("local", {
-    failureRedirect: "/",
+    failureRedirect: "/login",
+    failureFlash: true,
   }),
   async (req, res) => {
     res.redirect("/dashboard");
@@ -120,6 +130,7 @@ app.get("/dashboard", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
   if (req.isAuthenticated()) {
     res.render("dashboard", {
       firstName: req.user.firstName,
+      userType: req.user.userType,
       lastName: req.user.lastName,
     });
   }
