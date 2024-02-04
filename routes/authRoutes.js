@@ -14,6 +14,15 @@ router.get("/signup", async (req, res) => {
   return res.render("signup", { csrfToken: req.csrfToken() });
 });
 
+router.get("/signout", (req, res, next) => {
+  req.logout((err) => {
+    if (err) {
+      return next(err);
+    }
+    res.redirect("/");
+  });
+});
+
 router.post("/users", async (req, res) => {
   const hashPwd = await bcrypt.hash(req.body.password, saltRounds);
   try {

@@ -4,7 +4,10 @@
   "description": "Capstone project for WD201 - An LMS system that can be used by educators and students",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon"
+    "pretest": "NODE_ENV=test npx sequelize-cli db:drop && NODE_ENV=test npx sequelize-cli db:create",
+    "test": "NODE_ENV=test jest --detectOpenHandles",
+    "start": "nodemon",
+    "start:prod": "node ."
   },
   "keywords": [],
   "author": "",
@@ -25,6 +28,10 @@
     "tiny-csrf": "^1.1.4"
   },
   "devDependencies": {
-    "nodemon": "^3.0.3"
+    "cheerio": "^1.0.0-rc.12",
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.3",
+    "sequelize-cli": "^6.6.2",
+    "supertest": "^6.3.4"
   }
 }

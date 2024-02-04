@@ -19,6 +19,7 @@
       >
     </header>
     <main>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
       <% if(userType==="student" ) {%> <%- include("student") %> <% } else { %>
       <%- include("educator") %> <% } %>
     </main>

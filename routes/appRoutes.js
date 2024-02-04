@@ -40,15 +40,6 @@ router.get(
   }
 );
 
-router.get("/signout", (req, res, next) => {
-  req.logout((err) => {
-    if (err) {
-      return next(err);
-    }
-    res.redirect("/");
-  });
-});
-
 router.get(
   "/courses/new",
   connectEnsureLogin.ensureLoggedIn(),
@@ -132,15 +123,19 @@ router.post(
   "/chapter",
   connectEnsureLogin.ensureLoggedIn(),
   async (req, res) => {
-    if (req.user.userType !== "educator") return res.redirect("/login");
-    const { courseId, name, description } = req.body;
-    console.log(req.body);
-    const chapter = await Chapter.create({
-      courseId,
-      name,
-      description,
-    });
-    res.redirect(`/courses/${courseId}/`);
+    try {
+      if (req.user.userType !== "educator") return res.redirect("/login");
+      const { courseId, name, description } = req.body;
+      console.log(req.body);
+      const chapter = await Chapter.create({
+        courseId,
+        name,
+        description,
+      });
+      res.redirect(`/courses/${courseId}/`);
+    } catch (err) {
+      res.status(403).json(err);
+    }
   }
 );
 
@@ -148,8 +143,8 @@ router.delete(
   "/chapter",
   connectEnsureLogin.ensureLoggedIn(),
   async (req, res) => {
-    console.log(req.body._csrf);
     const chapterId = req.body.id;
+    return res.json(chapterId);
   }
 );
 
