@@ -9,7 +9,35 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      Course.belongsTo(models.User, { foreignKey: "userId" });
+      Course.belongsTo(models.User, {
+        foreignKey: "userId",
+      });
+      Course.hasMany(models.Chapter, {
+        onDelete: "CASCADE",
+        foreignKey: "courseId",
+      });
+    }
+    static async deleteCourse(id) {
+      try {
+        const chapters = await sequelize.models.Chapter.findAll({
+          where: {
+            courseId: id,
+          },
+        });
+        for (let i = 0; i < chapters.length; i++) {
+          const chapter = chapters[i];
+          await chapter.destroy();
+        }
+        const course = await this.findByPk(id);
+        if (!course) {
+          throw new Error("Course not found");
+        }
+        await course.destroy();
+        return true;
+      } catch (error) {
+        console.log("Error deleting course:", error.message);
+        return false;
+      }
     }
   }
   Course.init(

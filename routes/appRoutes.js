@@ -19,6 +19,7 @@ router.get(
       const allCourses = await Course.findAll({ include: User });
       if (req.user.userType === "educator") {
         res.render("dashboard", {
+          csrfToken: req.csrfToken(),
           firstName: req.user.firstName,
           userType: req.user.userType,
           lastName: req.user.lastName,
@@ -28,6 +29,7 @@ router.get(
         });
       } else {
         res.render("dashboard", {
+          csrfToken: req.csrfToken(),
           firstName: req.user.firstName,
           userType: req.user.userType,
           lastName: req.user.lastName,
@@ -73,14 +75,25 @@ router.post(
   }
 );
 
+router.delete("/course", async (req, res) => {
+  try {
+    const course = await Course.findByPk(req.body.courseId);
+    await course.destroy();
+    res.redirect("/dashboard");
+  } catch (err) {
+    console.log(err);
+  }
+});
+
 router.get("/courses/:id", async (req, res) => {
   const courseID = req.params.id;
   const course = await Course.findByPk(courseID);
   if (!req.user) {
     return res.render("courses/coursePage", {
-      courseID,
+      courseID: courseID,
       name: course.name,
       courseOwner: false,
+      csrfToken: req.csrfToken(),
     });
   }
   const chapters = await Chapter.findAll({
@@ -89,6 +102,7 @@ router.get("/courses/:id", async (req, res) => {
     },
   });
   res.render("courses/coursePage", {
+    csrfToken: req.csrfToken(),
     courseID,
     chapters,
     name: course.name,
@@ -134,6 +148,7 @@ router.delete(
   "/chapter",
   connectEnsureLogin.ensureLoggedIn(),
   async (req, res) => {
+    console.log(req.body._csrf);
     const chapterId = req.body.id;
   }
 );
