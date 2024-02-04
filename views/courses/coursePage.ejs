@@ -44,6 +44,7 @@
             </div>
           </a>
           <button
+            onclick="deleteChapter(Number('<%= chapter.id %>'))"
             class="fa fa-trash-o text-3xl text-center w-[5%] h-12 hover:bg-red-700 rounded hover:text-white"
             id="delete-chapter-<%= chapter.id %>"
           ></button>
@@ -70,6 +71,21 @@
           console.log(res.url);
           window.location = res.url;
         }
+      }
+      async function deleteChapter(id) {
+        console.log("<%= csrfToken %>");
+        const res = await fetch("/chapter", {
+          method: "delete",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "<%= csrfToken %>",
+          },
+          body: JSON.stringify({
+            _csrf: "<%= csrfToken %>",
+            id: id,
+          }),
+        });
+        window.location.reload();
       }
     </script>
   </body>

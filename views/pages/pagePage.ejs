@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/showdown@2.1.0/dist/showdown.min.js"></script>
+  </head>
+  <body>
+    <header class="flex items-center justify-between w-[80%]">
+      <h1 class="px-80 my-6 font-bold text-4xl"><%= name %></h1>
+      <% if(courseOwner) { %>
+      <button
+        onclick="deletePage(Number('<%= pageId %>'))"
+        class="border-red-700 border rounded px-4 py-2 bg-red-700 text-white hover:bg-white hover:text-red-700"
+      >
+        Delete Page
+      </button>
+      <% } %>
+    </header>
+    <hr class="h-1 w-[80%] m-auto bg-gray-200 border-0 dark:bg-gray-700" />
+    <main>
+      <div class="px-24 py-8" id="markdown-content"><%= content %></div>
+    </main>
+  </body>
+  <script>
+    const markdownContent =
+      document.getElementById("markdown-content").innerHTML;
+    const converter = new showdown.Converter();
+    const htmlContent = converter.makeHtml(markdownContent);
+    document.getElementById("markdown-content").innerHTML = htmlContent;
+
+    async function deletePage(id) {
+      const res = await fetch("/page", {
+        method: "delete",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": "<%= csrfToken %>",
+        },
+        body: JSON.stringify({
+          id,
+          _csrf: "<%= csrfToken %>",
+        }),
+      });
+      console.log(res.url);
+      window.location = res.url;
+    }
+  </script>
+</html>
