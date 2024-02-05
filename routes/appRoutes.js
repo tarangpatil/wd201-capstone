@@ -17,17 +17,12 @@ router.get(
   connectEnsureLogin.ensureLoggedIn(),
   async (req, res) => {
     if (req.isAuthenticated()) {
+      console.log("ENROLL", await Enroll.findAll());
       if (req.user.userType === "educator") {
         let myCourses = await Course.findAll({
           where: { userId: req.user.id },
           include: User,
         });
-        // myCourses = myCourses.map((i) => ({
-        //   id: i.id,
-        //   name: i.dataValues.name,
-        //   author:
-        //     i.dataValues.User.firstName + " " + i.dataValues.User.lastName,
-        // }));
         myCourses = await Promise.all(
           myCourses.map(async (course) => ({
             name: course.name,

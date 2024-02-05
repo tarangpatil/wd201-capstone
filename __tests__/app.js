@@ -146,4 +146,22 @@ describe("Learning Management System", function () {
     expect(res.text).toBe("Found. Redirecting to /courses/2");
     expect(res.statusCode).toBe(302);
   });
+  test("Enrolls a user in a course", async () => {
+    const agent = request.agent(server);
+    let res = await agent.get("/signup");
+    let csrfToken = extractCSRFToken(res);
+    res = await agent.post("/users").send({
+      _csrf: csrfToken,
+      firstName: "Test",
+      lastName: "Student1",
+      email: "ts1@gmail.com",
+      password: "studentRocks",
+      userType: "student",
+    });
+    expect(res.statusCode).toBe(302);
+    csrfToken = extractCSRFToken(await agent.get("/dashboard"));
+    res = await agent.post("/enroll").send({ courseId: 2, _csrf: csrfToken });
+    expect(res.text).toBe("Found. Redirecting to /dashboard");
+    expect(res.statusCode).toBe(302);
+  });
 });
