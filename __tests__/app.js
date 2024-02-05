@@ -117,4 +117,33 @@ describe("Learning Management System", function () {
       chapterId: 69,
     });
   });
+  test("Creates a page", async () => {
+    const agent = request.agent(server);
+    await login(agent, "te1@gmail.com", "educatorRocks");
+    let res = await agent.get("/dashboard");
+    expect(res.statusCode).toBe(200);
+    let csrfToken = extractCSRFToken(res);
+    res = await agent.post("/chapter").send({
+      _csrf: csrfToken,
+      courseId: 2,
+      name: "intro to something",
+      description: "intro to the same thing",
+    });
+    console.log(res.text);
+    expect(res.text).toBe("Found. Redirecting to /courses/2/");
+    expect(res.statusCode).toBe(302);
+  });
+  test("Deletes a page", async () => {
+    const agent = request.agent(server);
+    await login(agent, "te1@gmail.com", "educatorRocks");
+    let res = await agent.get("/dashboard");
+    expect(res.statusCode).toBe(200);
+    let csrfToken = extractCSRFToken(res);
+    res = await agent.delete("/chapter").send({
+      _csrf: csrfToken,
+      id: 1,
+    });
+    expect(res.text).toBe("Found. Redirecting to /courses/2");
+    expect(res.statusCode).toBe(302);
+  });
 });

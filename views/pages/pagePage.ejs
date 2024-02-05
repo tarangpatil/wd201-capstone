@@ -8,8 +8,13 @@
     <script src="https://cdn.jsdelivr.net/npm/showdown@2.1.0/dist/showdown.min.js"></script>
   </head>
   <body>
-    <header class="flex items-center justify-between w-[80%]">
-      <h1 class="px-80 my-6 font-bold text-4xl"><%= name %></h1>
+    <header class="flex items-center justify-evenly w-[90%] m-auto">
+      <a
+        href="/dashboard"
+        class="bg-green-700 text-white rounded px-4 py-2 ml-8"
+        >Home</a
+      >
+      <h1 class="my-6 font-bold text-4xl"><%= name %></h1>
       <% if(courseOwner) { %>
       <button
         onclick="deletePage(Number('<%= pageId %>'))"
@@ -25,6 +30,11 @@
     </main>
   </body>
   <script>
+    if ("<%= courseOwner%>" === "false") {
+      document.querySelector("h1").classList.add("text-center");
+      document.querySelector("h1").classList.add("w-full");
+      document.querySelector("header").classList.add("m-auto");
+    }
     const markdownContent =
       document.getElementById("markdown-content").innerHTML;
     const converter = new showdown.Converter();

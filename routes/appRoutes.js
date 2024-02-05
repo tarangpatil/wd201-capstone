@@ -1,7 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const connectEnsureLogin = require("connect-ensure-login");
-const { User, Course, Chapter, Page } = require("../models");
+const { User, Course, Chapter, Page, Enroll, Sequelize } = require("../models");
+const { Op } = require("sequelize");
 
 router.get("/", async (req, res) => {
   if (req.isAuthenticated()) {
@@ -16,24 +17,92 @@ router.get(
   connectEnsureLogin.ensureLoggedIn(),
   async (req, res) => {
     if (req.isAuthenticated()) {
-      const allCourses = await Course.findAll({ include: User });
       if (req.user.userType === "educator") {
+        let myCourses = await Course.findAll({
+          where: { userId: req.user.id },
+          include: User,
+        });
+        // myCourses = myCourses.map((i) => ({
+        //   id: i.id,
+        //   name: i.dataValues.name,
+        //   author:
+        //     i.dataValues.User.firstName + " " + i.dataValues.User.lastName,
+        // }));
+        myCourses = await Promise.all(
+          myCourses.map(async (course) => ({
+            name: course.name,
+            author: `${course.User.firstName} ${course.User.lastName}`,
+            id: course.id,
+            strength: (
+              await Enroll.findAll({
+                where: { courseId: course.id },
+              })
+            ).length,
+          }))
+        );
+        console.log(myCourses);
         res.render("dashboard", {
           csrfToken: req.csrfToken(),
           firstName: req.user.firstName,
           userType: req.user.userType,
           lastName: req.user.lastName,
-          myCourses: allCourses.filter(
-            (course) => course.User.id === req.user.id
-          ),
+          myCourses,
         });
       } else {
+        let newCourses = await Enroll.findAll({
+          where: { userId: req.user.id },
+          include: User,
+        });
+        newCourses = newCourses.map((i) => i.dataValues.courseId);
+        newCourses = await Course.findAll({
+          where: {
+            id: {
+              [Op.notIn]: newCourses,
+            },
+          },
+          include: User,
+        });
+        newCourses = await Promise.all(
+          newCourses.map(async (course) => ({
+            name: course.name,
+            author: `${course.User.firstName} ${course.User.lastName}`,
+            id: course.id,
+            strength: (
+              await Enroll.findAll({
+                where: { courseId: course.id },
+              })
+            ).length,
+          }))
+        );
+        console.log(newCourses);
+        let enrolledCourses = await Enroll.findAll({
+          where: {
+            userId: req.user.id,
+          },
+          include: [Course, User],
+        });
+        enrolledCourses = await Promise.all(
+          enrolledCourses.map(async (enrollment) => ({
+            name: enrollment.dataValues.Course.name,
+            author:
+              enrollment.dataValues.User.firstName +
+              " " +
+              enrollment.dataValues.User.lastName,
+            id: enrollment.dataValues.Course.id,
+            strength: (
+              await Enroll.findAll({
+                where: { courseId: enrollment.dataValues.Course.id },
+              })
+            ).length,
+          }))
+        );
         res.render("dashboard", {
           csrfToken: req.csrfToken(),
           firstName: req.user.firstName,
           userType: req.user.userType,
           lastName: req.user.lastName,
-          myCourses: allCourses,
+          enrolledCourses,
+          newCourses,
         });
       }
     }
@@ -57,11 +126,13 @@ router.post(
   "/course",
   connectEnsureLogin.ensureLoggedIn(),
   async (req, res) => {
-    const { courseName } = req.body;
-    const newCourse = await Course.create({
-      name: courseName,
-      userId: req.user.id,
-    });
+    if (req.user.userType === "educator") {
+      const { courseName } = req.body;
+      const newCourse = await Course.create({
+        name: courseName,
+        userId: req.user.id,
+      });
+    }
     res.redirect("/dashboard/");
   }
 );
@@ -84,6 +155,7 @@ router.get("/courses/:id", async (req, res) => {
       courseID: courseID,
       name: course.name,
       courseOwner: false,
+      locked: true,
       csrfToken: req.csrfToken(),
     });
   }
@@ -92,10 +164,18 @@ router.get("/courses/:id", async (req, res) => {
       courseId: courseID,
     },
   });
+  const locked =
+    (await Enroll.findAll({
+      where: {
+        courseId: req.params.id,
+        userId: req.user.id,
+      },
+    })) === null;
   res.render("courses/coursePage", {
     csrfToken: req.csrfToken(),
     courseID,
     chapters,
+    locked,
     name: course.name,
     courseOwner: req.user.id === course.userId,
   });
@@ -125,6 +205,18 @@ router.get(
   async (req, res) => {
     const chapter = await Chapter.findByPk(req.params.id);
     const course = await Course.findByPk(chapter.courseId);
+    const locked =
+      (
+        await Enroll.findAll({
+          where: {
+            courseId: course.id,
+            userId: req.user.id,
+          },
+        })
+      ).length === 0;
+
+    if (locked) return res.send("<h1>Enroll to view chapter</h1>");
+
     const pages = (
       await Page.findAll({
         where: {
@@ -132,7 +224,6 @@ router.get(
         },
       })
     ).map((page) => page.dataValues);
-
     res.render("chapters/chapterPage", {
       ...chapter.dataValues,
       csrfToken: req.csrfToken(),
@@ -202,7 +293,18 @@ router.get(
     const course = await Course.findByPk(page.Chapter.courseId, {
       include: User,
     });
-    console.log("content", page.content);
+    const locked =
+      (
+        await Enroll.findAll({
+          where: {
+            courseId: course.id,
+            userId: req.user.id,
+          },
+        })
+      ).length === 0;
+
+    if (locked) return res.send("<h1>Enroll to view chapter</h1>");
+
     res.render("pages/pagePage", {
       csrfToken: req.csrfToken(),
       name: page.dataValues.name,
@@ -233,6 +335,26 @@ router.delete(
     const chapterId = page.dataValues.chapterId;
     await page.destroy();
     res.redirect(`/chapters/${chapterId}`);
+  }
+);
+
+router.post(
+  "/enroll",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    if (req.user.userType === "student") {
+      try {
+        const userId = req.user.id;
+        const courseId = req.body.courseId;
+        await Enroll.create({ userId: userId, courseId: courseId });
+        res.redirect("/dashboard");
+      } catch (error) {
+        console.log(error);
+        res.status(403).json(error);
+      }
+    } else {
+      res.redirect("/login");
+    }
   }
 );
 

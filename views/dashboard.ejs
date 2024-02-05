@@ -20,8 +20,26 @@
     </header>
     <main>
       <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-      <% if(userType==="student" ) {%> <%- include("student") %> <% } else { %>
+      <% if(userType==="student") {%> <%- include("student") %> <% } else { %>
       <%- include("educator") %> <% } %>
     </main>
   </body>
+  <% if (userType==="student") {%>
+  <script>
+    async function enrollCourse(courseId) {
+      const res = await fetch("/enroll", {
+        method: "post",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": "<%= csrfToken %>",
+        },
+        body: JSON.stringify({
+          courseId,
+          _csrf: "<%= csrfToken %>",
+        }),
+      });
+      window.location.reload();
+    }
+  </script>
+  <% } %>
 </html>

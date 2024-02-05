@@ -7,8 +7,13 @@
     <script src="https://cdn.tailwindcss.com/3.4.1"></script>
   </head>
   <body>
-    <header class="flex items-center justify-evenly w-[90%]">
-      <h1 class="px-80 my-12 font-bold text-4xl"><%= name %></h1>
+    <header class="flex items-center justify-evenly w-[90%] m-auto">
+      <a
+        href="/dashboard"
+        class="bg-green-700 text-white rounded px-4 py-2 ml-8"
+        >Home</a
+      >
+      <h1 class="my-12 font-bold text-4xl"><%= name %></h1>
       <% if(courseOwner) { %>
       <a
         href="/chapter/<%= chapterId %>/pages/new"
@@ -33,16 +38,12 @@
         <li
           class="my-4 bg-slate-200 py-2 px-4 rounded hover:bg-slate-300 flex justify-between items-center"
         >
-          <a href="/pages/<%= page.id %>" class="w-[90%]">
+          <a href="/pages/<%= page.id %>" class="w-full">
             <div>
               <p class="text-xl"><%=page.name%></p>
               <div class="px-6 py-1"><%= page.description %></div>
             </div>
           </a>
-          <button
-            class="fa fa-trash-o text-3xl text-center w-[5%] h-12 hover:bg-red-700 rounded hover:text-white"
-            id="delete-page-<%= page.id %>"
-          ></button>
         </li>
         <% }) %>
       </ul>
