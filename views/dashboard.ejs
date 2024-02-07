@@ -12,11 +12,16 @@
       <h1 class="text-4xl my-2 mx-4 font-bold">
         Welcome, <%= firstName %> <%= lastName %>
       </h1>
-      <a
-        href="/signout"
-        class="py-2 px-4 text-white bg-green-600 mx-6 hover:border-green-600 hover:border hover:bg-white hover:text-green-600"
-        >Logout</a
-      >
+      <div>
+        <a href="/changePassword" class="bg-blue-600 py-2 px-4 rounded text-white hover:border-blue-600 hover:border hover:bg-white hover:text-blue-600">
+          Change Password
+        </a>
+        <a
+          href="/signout"
+          class="py-2 px-4 text-white bg-green-600 mx-6 hover:border-green-600 hover:border hover:bg-white hover:text-green-600"
+          >Logout</a
+        >
+      </div>
     </header>
     <main>
       <input type="hidden" name="_csrf" value="<%= csrfToken %>" />

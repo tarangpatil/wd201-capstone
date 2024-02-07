@@ -164,4 +164,40 @@ describe("Learning Management System", function () {
     expect(res.text).toBe("Found. Redirecting to /dashboard");
     expect(res.statusCode).toBe(302);
   });
+  test("Mark a page as complete", async () => {
+    const agent = request.agent(server);
+    await login(agent, "te1@gmail.com", "educatorRocks");
+    let csrfToken = extractCSRFToken(await agent.get("/chapter/2/pages/new"));
+    let res = await agent.post("/page").send({
+      _csrf: csrfToken,
+      name: "Why HTML?",
+      content: "Because HTML makes webpage body",
+      chapterId: 2,
+    });
+    await agent.get("/signout");
+    await login(agent, "ts1@gmail.com", "studentRocks");
+    res = await agent.get("/dashboard");
+    csrfToken = extractCSRFToken(res);
+    res = await agent.post("/markComplete").send({
+      _csrf: csrfToken,
+      id: 1,
+    });
+    console.log(res.text);
+    expect(res.text.includes("/pages/1")).toBe(true);
+    expect(res.statusCode).toBe(302);
+  });
+  test("Change user password", async () => {
+    const agent = request.agent(server);
+    await login(agent, "te1@gmail.com", "educatorRocks");
+    const csrfToken = extractCSRFToken(await agent.get("/dashboard"));
+    await agent.post("/changePassword").send({
+      _csrf: csrfToken,
+      oldPassword: "educatorRocks",
+      newPassword: "educatorShocks",
+      newRepassword: "educatorShocks",
+    });
+    await login(agent, "te1@gmail.com", "educatorShocks");
+    let res = await agent.get("/dashboard");
+    expect(res.statusCode).toBe(200);
+  });
 });

@@ -12,6 +12,10 @@ module.exports = (sequelize, DataTypes) => {
         through: models.Enroll,
         foreignKey: "userId",
       });
+      User.belongsToMany(models.Page, {
+        through: models.MarkComplete,
+        foreignKey: "userId",
+      });
     }
   }
   User.init(

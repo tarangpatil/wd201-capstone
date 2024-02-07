@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title><%= name %></title>
     <script src="https://cdn.tailwindcss.com/3.4.1"></script>
     <script src="https://cdn.jsdelivr.net/npm/showdown@2.1.0/dist/showdown.min.js"></script>
   </head>
@@ -25,9 +25,33 @@
       <% } %>
     </header>
     <hr class="h-1 w-[80%] m-auto bg-gray-200 border-0 dark:bg-gray-700" />
-    <main>
+    <main class="min-h-[70vh]">
       <div class="px-24 py-8" id="markdown-content"><%= content %></div>
     </main>
+    <footer>
+      <div class="w-full px-40 flex items-center justify-between">
+        <% if (prevPageId >= 0) { %>
+        <a href="/pages/<%= prevPageId %>" class="p-4 bg-slate-300 rounded"
+          >Previous Page</a
+        >
+        <% } %> <% if (userType === "student" && !pageComplete) { %>
+        <button
+          onclick="markComplete(Number('<%= pageId %>'))"
+          class="bg-green-600 py-4 px-16 rounded text-white"
+        >
+          Mark as complete
+        </button>
+        <% } else if (userType === "student" && pageComplete) { %>
+        <div class="bg-gray-600 py-4 px-16 rounded text-white italic">
+          Completed
+        </div>
+        <% } %> <% if(nextPageId !== -1) {%>
+        <a href="/pages/<%= nextPageId %>" class="p-4 bg-slate-300 rounded"
+          >Next Page</a
+        >
+        <% } %>
+      </div>
+    </footer>
   </body>
   <script>
     if ("<%= courseOwner%>" === "false") {
@@ -57,4 +81,24 @@
       window.location = res.url;
     }
   </script>
+  <% if(userType === "student") { %>
+  <script>
+    async function markComplete(id) {
+      const res = await fetch("/markComplete", {
+        method: "post",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": "<%=csrfToken%>",
+        },
+        body: JSON.stringify({
+          _csrf: "<%=csrfToken%>",
+          id: id,
+        }),
+      });
+      if (res.ok) {
+        window.location.reload();
+      }
+    }
+  </script>
+  <% } %>
 </html>

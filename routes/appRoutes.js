@@ -1,8 +1,16 @@
 const express = require("express");
 const router = express.Router();
 const connectEnsureLogin = require("connect-ensure-login");
-const { User, Course, Chapter, Page, Enroll, Sequelize } = require("../models");
+const {
+  User,
+  Course,
+  Chapter,
+  Page,
+  Enroll,
+  MarkComplete,
+} = require("../models");
 const { Op } = require("sequelize");
+const bcrypt = require("bcrypt");
 
 router.get("/", async (req, res) => {
   if (req.isAuthenticated()) {
@@ -17,7 +25,6 @@ router.get(
   connectEnsureLogin.ensureLoggedIn(),
   async (req, res) => {
     if (req.isAuthenticated()) {
-      console.log("ENROLL", await Enroll.findAll());
       if (req.user.userType === "educator") {
         let myCourses = await Course.findAll({
           where: { userId: req.user.id },
@@ -200,7 +207,7 @@ router.get(
   async (req, res) => {
     const chapter = await Chapter.findByPk(req.params.id);
     const course = await Course.findByPk(chapter.courseId);
-    const locked =
+    let locked =
       (
         await Enroll.findAll({
           where: {
@@ -209,6 +216,7 @@ router.get(
           },
         })
       ).length === 0;
+    locked = course.dataValues.userId !== req.user.id && locked;
 
     if (locked) return res.send("<h1>Enroll to view chapter</h1>");
 
@@ -288,7 +296,7 @@ router.get(
     const course = await Course.findByPk(page.Chapter.courseId, {
       include: User,
     });
-    const locked =
+    let locked =
       (
         await Enroll.findAll({
           where: {
@@ -297,9 +305,35 @@ router.get(
           },
         })
       ).length === 0;
+    locked = course.dataValues.userId !== req.user.id && locked;
 
     if (locked) return res.send("<h1>Enroll to view chapter</h1>");
-
+    let pageComplete = await MarkComplete.findAll({
+      where: {
+        pageId: req.params.id,
+        userId: req.user.id,
+      },
+    });
+    pageComplete = pageComplete.length > 0;
+    const allPages = await Page.findAll({
+      where: {
+        chapterId: page.chapterId,
+      },
+    });
+    let pageId = Number(req.params.id);
+    let nextPageId = -1;
+    let prevPageId = -1;
+    for (let i = 0; i < allPages.length; i++) {
+      if (allPages[i].id === pageId) {
+        if (i !== allPages.length - 1) {
+          nextPageId = allPages[i + 1].id;
+        }
+        if (i !== 0) {
+          prevPageId = allPages[i - 1].id;
+        }
+        break;
+      }
+    }
     res.render("pages/pagePage", {
       csrfToken: req.csrfToken(),
       name: page.dataValues.name,
@@ -307,6 +341,10 @@ router.get(
       courseId: course.id,
       content: page.dataValues.content,
       courseOwner: req.user.id === course.userId,
+      userType: req.user.userType,
+      pageComplete,
+      nextPageId,
+      prevPageId,
     });
   }
 );
@@ -350,6 +388,59 @@ router.post(
     } else {
       res.redirect("/login");
     }
+  }
+);
+
+router.post(
+  "/markComplete",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    try {
+      if (req.user.userType === "student") {
+        const userId = req.user.id;
+        const pageId = req.body.id;
+        const markComplete = await MarkComplete.create({
+          userId,
+          pageId,
+        });
+        console.log(markComplete);
+        res.redirect(`/pages/${pageId}`);
+      } else res.redirect("/login");
+    } catch (error) {
+      res.json(error);
+    }
+  }
+);
+
+router.get(
+  "/changePassword",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    res.render("changePassword", { csrfToken: req.csrfToken() });
+  }
+);
+
+router.post(
+  "/changePassword",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    const { oldPassword, newPassword, newRepassword } = req.body;
+    if (newPassword !== newRepassword) {
+      req.flash("error", "Passwords do not match");
+      return res.redirect("/changePassword");
+    }
+    if (newPassword.length < 8) {
+      req.flash("error", "Passwords shorter than 8 characters");
+      return res.redirect("/changePassword");
+    }
+    const user = await User.findByPk(req.user.id);
+    if (!(await bcrypt.compare(oldPassword, user.password))) {
+      req.flash("error", "Wrong old password");
+      return res.redirect("/changePassword");
+    }
+    const newPwdHash = await bcrypt.hash(newPassword, 10);
+    await User.update({ password: newPwdHash }, { where: { id: req.user.id } });
+    res.redirect("/signout");
   }
 );
 
